@@ -37,6 +37,7 @@
 #   -y, --yes           don't ask for confirmation
 #   -q, --quiet         less output
 #   -h, --help
+#   --version           print the version
 #
 # Settings can also come from AIDLC_* environment variables or a config file;
 # see aidlc-kit.conf.example and docs/DESIGN.md.
@@ -49,6 +50,8 @@
 # files changed on both sides (left untouched; everything else was saved).
 
 set -euo pipefail
+
+AIDLC_KIT_VERSION="0.1.0"
 
 KIT_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)"
 # shellcheck source=../lib/common.sh
@@ -88,5 +91,6 @@ case "$cmd" in
   migrate-legacy) cmd_migrate_legacy "$@" ;;
   detach) cmd_detach "$@" ;;
   -h|--help|help|"") usage ;;
+  --version|version) echo "aidlc-kit $AIDLC_KIT_VERSION" ;;
   *) die "unknown command '$cmd' (see 'aidlc-kit --help')" ;;
 esac

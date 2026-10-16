@@ -6,6 +6,9 @@ set -uo pipefail
 # shellcheck source=helpers.sh
 . "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 
+echo "version"
+check "--version prints the version" bash -c "bash '$CLI' --version | grep -qE '^aidlc-kit [0-9]+\.[0-9]+\.[0-9]+$'"
+
 echo "init"
 new_sandbox
 check_not "first init refuses without --yes when not on a terminal" kit init "$W" --docs-repo "$D"

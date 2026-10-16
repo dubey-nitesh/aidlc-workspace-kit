@@ -1,5 +1,7 @@
 # aidlc-workspace-kit
 
+[![CI](https://github.com/dubey-nitesh/aidlc-workspace-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/dubey-nitesh/aidlc-workspace-kit/actions/workflows/ci.yml)
+
 Keep the output of AI-assisted workflows — [AI-DLC](https://github.com/awslabs/aidlc-workflows)
 docs, [Graphify](https://pypi.org/project/graphifyy/) graphs, your own tools' folders — **out of
 your project's git history**, versioned in a separate (usually private) **docs repo**, without

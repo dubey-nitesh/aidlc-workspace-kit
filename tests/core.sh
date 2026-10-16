@@ -296,7 +296,8 @@ check "docs folder recreated and link healthy" kit status "$W"
 if [ "$FILE_LINKS" = 1 ]; then
   new_sandbox
   mkdir -p "$SB/a" "$SB/b" "$SB/elsewhere"
-  ln -s "../b/target" "$SB/a/link"
+  # nativestrict, as the kit does: Git Bash's plain `ln -s` makes no real symlink
+  MSYS=winsymlinks:nativestrict ln -s "../b/target" "$SB/a/link"
   check "relative dangling link matches its real destination from any cwd" bash -c "cd '$SB/elsewhere' && . '$KIT/lib/common.sh' && . '$KIT/lib/link.sh' && dangling_link_to '$SB/a/link' '$SB/b/target'"
   check_not "and does not match a different destination" bash -c "cd '$SB/elsewhere' && . '$KIT/lib/common.sh' && . '$KIT/lib/link.sh' && dangling_link_to '$SB/a/link' '$SB/elsewhere/target'"
 else

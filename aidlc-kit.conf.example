@@ -1,0 +1,37 @@
+# aidlc-kit settings. Copy to `aidlc-kit.conf` (next to this file, in the
+# directory you run aidlc-kit from, or ~/.config/aidlc-kit/config) and edit.
+# Every setting is optional.
+#
+# Precedence: command-line flag > environment variable > this file > default.
+# Format: KEY=VALUE. Lines starting with # are comments. The file is parsed,
+# not executed. Paths may start with ~ ; relative paths resolve against the
+# directory this file is in.
+
+# Where your docs repo lives (a clone of the private repo that holds the
+# AI-DLC docs / Graphify output of your projects). Needed on first `init` or
+# `attach` unless you pass --docs-repo.
+# AIDLC_DOCS_REPO=~/code/my-aidlc-docs
+
+# How managed paths appear in the working repo:
+#   auto  link (symlink, or a junction on Windows), else fall back to copies
+#   link  links only; fail rather than copy
+#   copy  always plain copies, kept in step by `aidlc-kit save` and the hooks
+# AIDLC_LINK_MODE=auto
+
+# Hooks to install: all | none | claude | git | a list of
+#   session-start, stop, session-end (Claude Code), post-commit, pre-push (git)
+# AIDLC_HOOKS=all
+
+# Should the hooks commit to the docs repo, and push it on `git push`?
+# AIDLC_AUTO_COMMIT=on
+# AIDLC_AUTO_PUSH=on
+
+# Extra profiles (forks, other tools): a folder of *.profile files.
+# AIDLC_PROFILES_DIR=~/aidlc-profiles
+
+# AI-DLC rules, used by `init` only when the project has none and the
+# upstream `aidlc` CLI isn't installed: a downloaded 1.x `aidlc-rules/` folder
+# (or a clone of awslabs/aidlc-workflows), copied in the layout for:
+#   claude | agents | cursor | cline | kiro | amazonq
+# AIDLC_RULES_DIR=~/Downloads/aidlc-rules
+# AIDLC_TARGET=claude

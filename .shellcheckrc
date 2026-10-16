@@ -1,0 +1,4 @@
+# Libraries in lib/ and scripts/lib.sh are sourced, not run; their file-wide
+# directives (line 1 of each) cover cross-file variables and functions.
+external-sources=true
+source-path=SCRIPTDIR

@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# aidlc-kit — keep AI-generated artifacts (AI-DLC docs, Graphify output, …) out
+# of your working repo's history, in a separate docs repo.
+#
+# Usage: aidlc-kit <command> [<working-repo-dir>] [options]
+#
+# Commands:
+#   init     set up AI-DLC rules if missing, move artifacts into the docs repo, link them back
+#   attach   recreate links on a fresh clone / another machine / cloud sandbox
+#   status   show each managed path, its mode and health
+#   save     sync copy-mode paths, commit this project's folder in the docs repo
+#   adopt    start managing more paths:  aidlc-kit adopt <path>... [--repo DIR]
+#   doctor   check links, sync state, docs repo and hooks; exits 1 on problems
+#   hooks    install | uninstall the git and Claude Code hooks (init does it)
+#   hook     run by the installed hooks: hook <event> (never fails)
+#   skill    install | uninstall the aidlc-init Claude Code skill for all your projects
+#   migrate-legacy  move <name>/graphify/* up one level in an old ai-dlc-workspace repo:
+#            aidlc-kit migrate-legacy --docs-repo DIR --name NAME (see docs/migrating.md)
+#   detach   replace links with real copies, remove hooks, stop managing the repo
+#
+# Options:
+#   --repo DIR          the working repo (default: the current directory)
+#   --docs-repo DIR     docs repo (default: AIDLC_DOCS_REPO, or the one recorded for this repo)
+#   --name NAME         project folder name in the docs repo (default: working repo's dir name)
+#   --profile NAME      use this profile instead of auto-detection (repeatable)
+#   --path PATH         also manage PATH, relative to the repo; end dirs with '/' (repeatable)
+#   --prefer working|docs   which copy wins when both sides already have content
+#   --link-mode auto|link|copy   auto: link, else copy (default) · link: never copy · copy: never link
+#   --no-hooks          (init, attach) don't install hooks
+#   --no-rules          (init) don't look for or install AI-DLC rules
+#   -t, --target T      (init) rule layout when copying 1.x rules / 2.x harness:
+#                       claude (default), agents, cursor, cline, kiro, amazonq
+#   --push              (save) also pull --rebase and push the docs repo
+#   -m, --message MSG   (save) commit message (default: "<project>: AI artifacts @ <branch> <sha> (<trigger>)")
+#   --trigger NAME      (save) what caused the save, shown in the default message
+#   -n, --dry-run       show the plan, change nothing
+#   -y, --yes           don't ask for confirmation
+#   -q, --quiet         less output
+#   -h, --help
+#
+# Settings can also come from AIDLC_* environment variables or a config file;
+# see aidlc-kit.conf.example and docs/DESIGN.md.
+#
+# Hooks (AIDLC_HOOKS, default all): session-start, stop, session-end (Claude
+# Code, in .claude/settings.local.json) and post-commit, pre-push (git). With
+# AIDLC_AUTO_COMMIT=off they only sync; AIDLC_AUTO_PUSH=off skips the push.
+#
+# save exits 0 when done, 1 if the commit or push failed, 2 if some copy-mode
+# files changed on both sides (left untouched; everything else was saved).
+
+set -euo pipefail
+
+KIT_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)"
+# shellcheck source=../lib/common.sh
+. "$KIT_LIB/common.sh"
+# shellcheck source=../lib/profiles.sh
+. "$KIT_LIB/profiles.sh"
+# shellcheck source=../lib/record.sh
+. "$KIT_LIB/record.sh"
+# shellcheck source=../lib/link.sh
+. "$KIT_LIB/link.sh"
+# shellcheck source=../lib/commands.sh
+. "$KIT_LIB/commands.sh"
+# shellcheck source=../lib/save.sh
+. "$KIT_LIB/save.sh"
+# shellcheck source=../lib/hooks.sh
+. "$KIT_LIB/hooks.sh"
+# shellcheck source=../lib/rules.sh
+. "$KIT_LIB/rules.sh"
+
+usage() { sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+
+command -v git >/dev/null 2>&1 || die "git is required"
+trap cleanup EXIT   # temp files and the docs-repo lock, also on errors
+
+cmd="${1:-}"
+[ $# -gt 0 ] && shift
+case "$cmd" in
+  init) cmd_init "$@" ;;
+  attach) cmd_attach "$@" ;;
+  status) cmd_status "$@" ;;
+  save) cmd_save "$@" ;;
+  adopt) cmd_adopt "$@" ;;
+  doctor) cmd_doctor "$@" ;;
+  hooks) cmd_hooks "$@" ;;
+  hook) cmd_hook "$@" ;;
+  skill) cmd_skill "$@" ;;
+  migrate-legacy) cmd_migrate_legacy "$@" ;;
+  detach) cmd_detach "$@" ;;
+  -h|--help|help|"") usage ;;
+  *) die "unknown command '$cmd' (see 'aidlc-kit --help')" ;;
+esac

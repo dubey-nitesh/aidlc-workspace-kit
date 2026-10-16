@@ -1,0 +1,3 @@
+# Your local settings — never commit these here.
+/aidlc-kit.conf
+.DS_Store
